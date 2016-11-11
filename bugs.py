@@ -6,8 +6,8 @@ import numpy as np
 import sys 
 
 #n = raw_input("What's the size of our game?") 
-n = 5 #the size of the 2D array for both animals and food arrays
-time = 5 #length of test run
+n = 4 #the size of the 2D array for both animals and food arrays
+time = 4 #length of test run
 field = np.zeros((n,n)) #initialisig 2D array of size n representing amount of food, set to 0
 s = 1 #empty space around population at the edges
 #have this as input and evaluate by if statement
@@ -20,11 +20,11 @@ animals = np.vstack((empty_2, anim_1, empty_2))		#buffer of 2 rows of 0s on top 
 
 print "The initial animals grid is:\n", animals 
 a = 1 # arbitrary constant for rate of food growth
-b = 3 # rate of replication
+b = 3 # rate of breeding
 c = 1 # arbitrary constant for rate of food consumption by an animal
-starve = 2 #minimal amount of food that needs to be consumed for an animal to survive
+starve = 3 #minimal amount of food that needs to be consumed for an animal to survive
 field += n-2*s #initial amount of food per square set to dimension of population
-
+total = np.zeros((n,n))
 
 ####### Function to evaluate which animals are dying ###############################################################################################################################
 
@@ -36,64 +36,142 @@ def dying (field, animals):
 			if 0 < x < n-1 and 0 < y < n-1:
 				for x_poz in range (x-1, x+2):
 					for y_poz in range (y-1, y+2):
-						temp = np.sum(field[x_poz, y_poz])
-						total[x,y] +=temp
-						
+						total[x,y] += field[x_poz, y_poz]	
 			elif x == 0:	
 				for x_poz in range (0,x+2):	
 					if y == 0:	
 						for y_poz in range (0,y+2): 
-							temp = np.sum(field[x_poz, y_poz])
-							total[x,y] +=temp									
+							total[x,y] += field[x_poz, y_poz]								
 					elif y > 0 and y < n-1:
 						for y_poz in range ( y-1, y+2):		
-							temp = np.sum(field[x_poz, y_poz])
-							total[x,y] +=temp	
+							total[x,y] += field[x_poz, y_poz]
 					elif y == n-1:
 						for y_poz in range (n-2, n):
-							temp = np.sum(field[x_poz, y_poz])
-							total[x,y] +=temp	
-							
+							total[x,y] += field[x_poz, y_poz]
 			elif y == 0: 		
 				for y_poz in range (0,y+2):
 					if 0 < x and x < n-1:
 						for x_poz in range (x-1, x+2):	
-							temp = np.sum(field[x_poz, y_poz])
-							total[x,y] +=temp	
+							total[x,y] += field[x_poz, y_poz]
 					elif x == n-1:
 						for x_poz in range (n-2, n): 
-							temp = np.sum(field[x_poz, y_poz])
-							total[x,y] +=temp
+							total[x,y] += field[x_poz, y_poz]
 							
 			elif x == n-1: 		
 				for x_poz in range (n-2,n):
 					if 0 < y and y < n-1:
 						for y_poz in range ( y-1, y+2):		
-							temp = np.sum(field[x_poz, y_poz])
-						 	total[x,y] +=temp
+							total[x,y] += field[x_poz, y_poz]
 					elif y == n-1:
 						for y_poz in range (n-2, n):  
-							temp = np.sum(field[x_poz, y_poz])
-							total[x,y] +=temp
+							total[x,y] += field[x_poz, y_poz]
 							
 			elif y == n-1:		
 				for y_poz in range (n-2,n):
 						if 0 < x and x < n-1:
 							for x_poz in range ( x-1, x+2):		
-								temp = np.sum(field[x_poz, y_poz])
-								total[x,y] +=temp
+								total[x,y] += field[x_poz, y_poz]
 								
 			#if there is an animal in position x,y and total amount of food is less than minimal, animal dies					
-			if animals [x,y] == 1:
-				if total [x,y] < starve:
+			if total [x,y] < starve:
+				if animals[x,y] == 1:
 					animals [x,y] = 0
-					print "Animal",x+1,",",y+1,"is dead at time", t+1
-					#adding +1 as it makes more sense for humans to start from 1									
-	#print "Food score at time", t+1,"is\n",total
+					print "Animal",x,",",y,"is dead at time", t+1
+													
+	print "Food score at time", t+1,"is\n",total
 	return
 	
 	
-###################### Main function 
+###################### Breeding function  #########################################################################################################################################
+
+def replicating (animals, total):
+	for x in range (0, n):
+		for y in range (0, n):
+			if (0 < x < n-1 and 0 < y < n-1):				
+					if (animals[x,y] == 1 and animals[x+1,y] == 0):
+						animals[x+1, y] = 1
+						print "New animal created on",x+1,",",y
+					if (animals[x,y] == 1 and animals[x-1, y] == 0):
+						animals[x-1, y] = 1
+						print "New animal created on",x-1,",",y
+					if (animals[x,y] == 1 and animals[x,y+1] == 0): 
+						animals[x, y+1] = 1
+						print "New animal created on",x,",",y+1
+					if (animals[x,y] == 1 and animals [x, y-1] == 0):
+						animals[x, y-1] = 1
+						print "New animal created on",x,",",y-1			
+			elif (x == 0 and y == 0):				
+					if (animals[x,y] == 1 and animals[x+1, y] == 0):
+						animals[x+1, y] = 1
+						print "New animal created on",x+1,",",y
+					if (animals[x,y] == 1 and animals[x, y+1] == 0):
+						animals[x,y+1] = 1
+						print "New animal created on",x,",",y+1,"at",t		
+			elif (x == n-1 and y == 0):				
+					if (animals[x,y] == 1 and animals[x-1, y] == 0):
+						animals[x-1, y] = 1
+						print "New animal created on",x-1,",",y,"at",t	
+					if (animals[x,y] == 1 and animals[x, y+1] == 0):
+						animals[x,y+1] = 1
+						print "New animal created on",x,",",y+1,"at",t		
+			elif (x == n-1 and y == n-1):				
+					if (animals[x,y] == 1 and animals[x-1, y] == 0):
+						animals[x-1, y] = 1
+						print "New animal created on",x-1,",",y,"at",t	
+					if (animals[x,y] == 1 and animals[x, y-1] == 0):
+						animals[x,y-1] = 1
+						print "New animal created on",x,",",y-1				
+			elif (0 < y < n-1 and x == 0):				
+					if (animals[x,y] == 1 and animals[x+1, y] == 0):
+						animals[x+1, y] = 1
+						print "New animal created on",x+1,",",y
+					if (animals[x,y] == 1 and animals[x, y+1] == 0):
+						animals[x, y+1] = 1
+						print "New animal created on",x,",",y+1	
+					if (animals[x,y] == 1 and animals[x, y-1] == 0):
+						animals[x, y-1] = 1
+						print "New animal created on",x,",",y-1	
+			elif (0 < y < n-1 and x == n-1):				
+					if (animals[x,y] == 1 and animals[x-1, y] == 0):
+						animals[x-1, y] = 1
+						print "New animal created on",x-1,",",y
+					if (animals[x,y] == 1 and animals[x, y+1] == 0):
+						animals[x, y+1] = 1
+						print "New animal created on",x,",",y+1	
+					if (animals[x,y] == 1 and animals[x, y-1] == 0):
+						animals[x, y-1] = 1
+						print "New animal created on",x,",",y-1				
+			elif (y == n-1 and x == 0):				
+					if (animals[x,y] == 1 and animals[x+1, y] == 0):
+						animals[x+1, y] = 1
+						print "New animal created on",x+1,",",y
+					if (animals[x,y] == 1 and animals[x, y-1] == 0):
+						animals[x,y-1] = 1
+						print "New animal created on",x,",",y-1					
+			elif (y == 0 and 0 < x < n-1):	
+					if (animals[x,y] == 1 and animals[x+1, y] == 0):
+						animals[x+1, y] = 1
+						print "New animal created on",x+1,",",y
+					if (animals[x,y] == 1 and animals[x-1, y] == 0):
+						animals[x-1, y] = 1
+						print "New animal created on",x-1,",",y	
+					if (animals[x,y] == 1 and animals[x, y+1] == 0):
+						animals[x, y+1] = 1
+						print "New animal created on",x,",",y+1
+			elif (y == n-1 and 0 < x < n-1):	
+					if (animals[x,y] == 1 and animals[x+1, y] == 0):
+						animals[x+1, y] = 1
+						print "New animal created on",x+1,",",y
+					if (animals[x,y] == 1 and animals[x-1, y] == 0):
+						animals[x, y-1] = 1
+						print "New animal created on",x,",",y-1	
+					if (animals[x,y] == 1 and animals[x, y-1] == 0):
+						animals[x, y-1] = 1
+						print "New animal created on",x,",",y-1			
+	print animals				
+	return
+
+##################### Main function ###################################################################
 
 for t in range (0,time): #our set run time 
 	field += a
@@ -150,8 +228,19 @@ for t in range (0,time): #our set run time
 						for y_poz in range (y-1, y+2):
 							if field[x_poz, y_poz] >=c:
 								field[x_poz, y_poz] -= c
+	
+	
 	dying (field, animals) 
 	
+	if (t+1)%b == 0:
+		replicating (animals, total)
+		
+	
+print "Field is:\n", field
+print "Animals are:\n", animals
+	
+
+		
 	
 	
 				
