@@ -2,6 +2,7 @@
 
 import numpy as np
 import sys 
+import math
 
 n = 5 #the size of the 2D array for both animals and food arrays
 time = 1 #length of test run
